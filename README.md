@@ -4,3 +4,5 @@ It can handle multiple train configurations and will pick the best available tra
 
 Forum: https://forums.factorio.com/viewforum.php?f=214<br/>
 Download: https://mods.factorio.com/mods/Optera/LogisticTrainNetwork<br/>
+
+2.0 beta branch not yet tested.
