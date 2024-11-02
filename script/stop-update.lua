@@ -35,14 +35,14 @@ end
 
 local function remove_available_train(trainID)
   if debug_log then log("(UpdateStop) removing available train "..tostring(trainID).." from depot." ) end
-  global.Dispatcher.availableTrains_total_capacity = global.Dispatcher.availableTrains_total_capacity - global.Dispatcher.availableTrains[trainID].capacity
-  global.Dispatcher.availableTrains_total_fluid_capacity = global.Dispatcher.availableTrains_total_fluid_capacity - global.Dispatcher.availableTrains[trainID].fluid_capacity
-  global.Dispatcher.availableTrains[trainID] = nil
+  storage.Dispatcher.availableTrains_total_capacity = storage.Dispatcher.availableTrains_total_capacity - storage.Dispatcher.availableTrains[trainID].capacity
+  storage.Dispatcher.availableTrains_total_fluid_capacity = storage.Dispatcher.availableTrains_total_fluid_capacity - storage.Dispatcher.availableTrains[trainID].fluid_capacity
+  storage.Dispatcher.availableTrains[trainID] = nil
 end
 
 -- update stop input signals
 function UpdateStop(stopID, stop)
-  global.Dispatcher.Requests_by_Stop[stopID] = nil
+  storage.Dispatcher.Requests_by_Stop[stopID] = nil
 
   -- remove invalid stops
   if not stop or not stop.entity.valid or not stop.input.valid or not stop.output.valid or not stop.lamp_control.valid then
@@ -54,13 +54,13 @@ function UpdateStop(stopID, stop)
 
   -- remove invalid trains
   if stop.parked_train and not stop.parked_train.valid then
-    global.LogisticTrainStops[stopID].parked_train = nil
-    global.LogisticTrainStops[stopID].parked_train_id = nil
+    storage.LogisticTrainStops[stopID].parked_train = nil
+    storage.LogisticTrainStops[stopID].parked_train_id = nil
   end
 
   -- remove invalid active_deliveries -- shouldn't be necessary
   for i=#stop.active_deliveries, 1, -1 do
-    if not global.Dispatcher.Deliveries[stop.active_deliveries[i]] then
+    if not storage.Dispatcher.Deliveries[stop.active_deliveries[i]] then
       table.remove(stop.active_deliveries, i)
       if message_level >= 1 then printmsg({"ltn-message.error-invalid-delivery", stop.entity.backer_name}) end
       if debug_log then log("(UpdateStop) Removing invalid delivery from stop '"..tostring(stop.entity.backer_name).."': "..tostring(stop.active_deliveries[i])) end
@@ -82,7 +82,7 @@ function UpdateStop(stopID, stop)
   -- skip short circuited stops
   if detectShortCircuit(stop) then
     stop.error_code = 1
-    if stop.parked_train_id and global.Dispatcher.availableTrains[stop.parked_train_id] then
+    if stop.parked_train_id and storage.Dispatcher.availableTrains[stop.parked_train_id] then
       remove_available_train(stop.parked_train_id)
     end
     setLamp(stop, ErrorCodes[stop.error_code], 1)
@@ -94,7 +94,7 @@ function UpdateStop(stopID, stop)
   local stopCB = stop.entity.get_control_behavior()
   if stopCB and stopCB.disabled then
     stop.error_code = 1
-    if stop.parked_train_id and global.Dispatcher.availableTrains[stop.parked_train_id] then
+    if stop.parked_train_id and storage.Dispatcher.availableTrains[stop.parked_train_id] then
       remove_available_train(stop.parked_train_id)
     end
     setLamp(stop, ErrorCodes[stop.error_code], 2)
@@ -172,7 +172,7 @@ function UpdateStop(stopID, stop)
     stop.error_code = 0 -- we are error free here
     if is_depot then
       if stop.parked_train_id and stop.parked_train.valid then
-        if global.Dispatcher.Deliveries[stop.parked_train_id] then
+        if storage.Dispatcher.Deliveries[stop.parked_train_id] then
           setLamp(stop, "yellow", 1)
         else
           setLamp(stop, "blue", 1)
@@ -201,19 +201,19 @@ function UpdateStop(stopID, stop)
 
     -- add parked train to available trains
     if stop.parked_train_id and stop.parked_train.valid then
-      if global.Dispatcher.Deliveries[stop.parked_train_id] then
+      if storage.Dispatcher.Deliveries[stop.parked_train_id] then
         if debug_log then log("(UpdateStop) "..stop.entity.backer_name.." {"..network_id_string.."}"..
           ", depot priority: ".. depot_priority..
           ", assigned train.id: "..stop.parked_train_id )
         end
       else
-        if not global.Dispatcher.availableTrains[stop.parked_train_id] then
+        if not storage.Dispatcher.availableTrains[stop.parked_train_id] then
           -- full arrival handling in case ltn-depot signal was turned on with an already parked train
           TrainArrives(stop.parked_train)
         else
           -- update properties from depot
-          global.Dispatcher.availableTrains[stop.parked_train_id].network_id = network_id
-          global.Dispatcher.availableTrains[stop.parked_train_id].depot_priority = depot_priority
+          storage.Dispatcher.availableTrains[stop.parked_train_id].network_id = network_id
+          storage.Dispatcher.availableTrains[stop.parked_train_id].depot_priority = depot_priority
         end
         if debug_log then log("(UpdateStop) "..stop.entity.backer_name.." {"..network_id_string.."}"..
           ", depot priority: ".. depot_priority..
@@ -230,7 +230,7 @@ function UpdateStop(stopID, stop)
   -- not a depot > check if the name is unique
   else
     stop.is_depot = false
-    if stop.parked_train_id and global.Dispatcher.availableTrains[stop.parked_train_id] then
+    if stop.parked_train_id and storage.Dispatcher.availableTrains[stop.parked_train_id] then
       remove_available_train(stop.parked_train_id)
     end
 
@@ -239,7 +239,7 @@ function UpdateStop(stopID, stop)
       local signal_name = signal.name
       local item = signal_type..","..signal_name
 
-      for trainID, delivery in pairs (global.Dispatcher.Deliveries) do
+      for trainID, delivery in pairs (storage.Dispatcher.Deliveries) do
         local deliverycount = delivery.shipment[item]
         if deliverycount then
           if stop.parked_train and stop.parked_train_id == trainID then
@@ -265,7 +265,7 @@ function UpdateStop(stopID, stop)
               else --train loaded more than delivery
                 if debug_log then log("(UpdateStop) "..stop.entity.backer_name.." {"..network_id_string.."} updating delivery count with overloaded train "..trainID.." inventory: "..item.." "..traincount) end
                 -- update delivery to new size
-                global.Dispatcher.Deliveries[trainID].shipment[item] = traincount
+                storage.Dispatcher.Deliveries[trainID].shipment[item] = traincount
               end
             end
 
@@ -304,10 +304,10 @@ function UpdateStop(stopID, stop)
       -- Requests are handled when above Requester Threshold
       if (useProvideStackThreshold and stack_count >= providing_threshold_stacks) or
         (not useProvideStackThreshold and count >= providing_threshold) then
-        global.Dispatcher.Provided[item] = global.Dispatcher.Provided[item] or {}
-        global.Dispatcher.Provided[item][stopID] = count
-        global.Dispatcher.Provided_by_Stop[stopID] = global.Dispatcher.Provided_by_Stop[stopID] or {}
-        global.Dispatcher.Provided_by_Stop[stopID][item] = count
+        storage.Dispatcher.Provided[item] = storage.Dispatcher.Provided[item] or {}
+        storage.Dispatcher.Provided[item][stopID] = count
+        storage.Dispatcher.Provided_by_Stop[stopID] = storage.Dispatcher.Provided_by_Stop[stopID] or {}
+        storage.Dispatcher.Provided_by_Stop[stopID][item] = count
         if debug_log then
           local trainsEnRoute = "";
           for k,v in pairs(stop.active_deliveries) do
@@ -319,16 +319,16 @@ function UpdateStop(stopID, stop)
         (not useRequestStackThreshold and count*-1 >= requesting_threshold) then
         count = count * -1
         local ageIndex = item..","..stopID
-        global.Dispatcher.RequestAge[ageIndex] = global.Dispatcher.RequestAge[ageIndex] or game.tick
-        global.Dispatcher.Requests[#global.Dispatcher.Requests+1] = {age = global.Dispatcher.RequestAge[ageIndex], stopID = stopID, priority = requester_priority, item = item, count = count}
-        global.Dispatcher.Requests_by_Stop[stopID] = global.Dispatcher.Requests_by_Stop[stopID] or {}
-        global.Dispatcher.Requests_by_Stop[stopID][item] = count
+        storage.Dispatcher.RequestAge[ageIndex] = storage.Dispatcher.RequestAge[ageIndex] or game.tick
+        storage.Dispatcher.Requests[#storage.Dispatcher.Requests+1] = {age = storage.Dispatcher.RequestAge[ageIndex], stopID = stopID, priority = requester_priority, item = item, count = count}
+        storage.Dispatcher.Requests_by_Stop[stopID] = storage.Dispatcher.Requests_by_Stop[stopID] or {}
+        storage.Dispatcher.Requests_by_Stop[stopID][item] = count
         if debug_log then
           local trainsEnRoute = "";
           for k,v in pairs(stop.active_deliveries) do
             trainsEnRoute=trainsEnRoute.." "..v
           end
-          log("(UpdateStop) "..stop.entity.backer_name.." {"..network_id_string.."} requests "..item.." "..count.."("..requesting_threshold..")".." stacks: "..tostring(stack_count*-1).."("..requesting_threshold_stacks..")"..", priority: "..requester_priority..", min length: "..min_carriages..", max length: "..max_carriages..", age: "..global.Dispatcher.RequestAge[ageIndex].."/"..game.tick..", trains en route: "..trainsEnRoute)
+          log("(UpdateStop) "..stop.entity.backer_name.." {"..network_id_string.."} requests "..item.." "..count.."("..requesting_threshold..")".." stacks: "..tostring(stack_count*-1).."("..requesting_threshold_stacks..")"..", priority: "..requester_priority..", min length: "..min_carriages..", max length: "..max_carriages..", age: "..storage.Dispatcher.RequestAge[ageIndex].."/"..game.tick..", trains en route: "..trainsEnRoute)
         end
       end
 
