@@ -18,7 +18,7 @@ data:extend({
 
 -- support for cargo ship ports
 if mods["cargo-ships"] then
-  ltn_port =flib.copy_prototype(data.raw["recipe"]["port"], "ltn-port")
+  ltn_port = flib.copy_prototype(data.raw["recipe"]["port"], "ltn-port")
   ltn_port.ingredients = {
     {type="item", name="port", amount=1},
     {type="item", name="constant-combinator", amount=1},

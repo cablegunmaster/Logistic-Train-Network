@@ -232,11 +232,11 @@ local function updateAllTrains()
   storage.Dispatcher.availableTrains_total_fluid_capacity = 0
   storage.Dispatcher.availableTrains = {}
 
-  -- remove all parked train from logistic stops
+  -- remove all parked trains from logistic stops
   for stopID, stop in pairs (storage.LogisticTrainStops) do
     stop.parked_train = nil
     stop.parked_train_id = nil
-    UpdateStopOutput(stop)
+    UpdateStopOutput(stop, true)
   end
 
   -- add still valid trains back to stops
