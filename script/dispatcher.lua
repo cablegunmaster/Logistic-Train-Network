@@ -385,7 +385,7 @@ local function getStationDistance(stationA, stationB)
     --log(stationPair.." found, distance: "..storage.StopDistances[stationPair])
     return storage.StopDistances[stationPair]
   else
-    local dist = Get_Distance(stationA.position, stationB.position)
+    local dist = Distance(stationA.position, stationB.position)
     storage.StopDistances[stationPair] = dist
     --log(stationPair.." calculated, distance: "..dist)
     return dist
