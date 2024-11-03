@@ -112,11 +112,17 @@ function CreateStop(entity)
   lampctrl.destructible = false -- don't bother checking if alive
 
   -- connect lamp and control
-  lampctrl.get_control_behavior().parameters = {{index = 1, signal = {type="virtual",name="signal-white"}, count = 1 }}
-  input.connect_neighbour({target_entity=lampctrl, wire=defines.wire_type.green})
-  input.connect_neighbour({target_entity=lampctrl, wire=defines.wire_type.red})
+  if (lampctrl.get_control_behavior().sections_count == 0) then 
+    lampctrl.get_control_behavior().add_section()
+  end
+  lampctrl.get_control_behavior().get_section(1).set_slot(1,{value={type="virtual",name="signal-white",quality="normal"},min=661,max=661})
+  input.get_wire_connector(defines.wire_connector_id.combinator_input_red, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_red, true), false, defines.wire_origin.script)
+  input.get_wire_connector(defines.wire_connector_id.combinator_input_green, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_green, true), false, defines.wire_origin.script)
   input.get_or_create_control_behavior().use_colors = true
-  input.get_or_create_control_behavior().circuit_condition = {condition = {comparator=">",first_signal={type="virtual",name="signal-anything"}}}
+  input.get_or_create_control_behavior().color_mode = defines.control_behavior.lamp.color_mode.packed_rgb
+  input.get_or_create_control_behavior().rgb_signal = {type="virtual",name="signal-white"}
+  input.always_on= true
+
 
   if output == nil then -- create new
     output = entity.surface.create_entity
