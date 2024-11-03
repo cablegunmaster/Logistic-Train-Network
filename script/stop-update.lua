@@ -12,7 +12,7 @@ local function detectShortCircuit(checkStop)
   local entities = {checkStop.entity, checkStop.output, checkStop.input}
 
   for k, entity in pairs(entities) do
-    local greenWire = entity.get_circuit_network(defines.wire_type.green)
+    local greenWire = entity.get_circuit_network(defines.wire_connector_id.circuit_green)
     if greenWire then
       if networks[greenWire.network_id] then
         scdetected = true
@@ -20,7 +20,7 @@ local function detectShortCircuit(checkStop)
         networks[greenWire.network_id] = entity.unit_number
       end
     end
-    local redWire =  entity.get_circuit_network(defines.wire_type.red)
+    local redWire =  entity.get_circuit_network(defines.wire_connector_id.circuit_red)
     if redWire then
       if networks[redWire.network_id] then
         scdetected = true
@@ -294,8 +294,8 @@ function UpdateStop(stopID, stop)
       if signal_type == "item" then
         useProvideStackThreshold = providing_threshold_stacks > 0
         useRequestStackThreshold = requesting_threshold_stacks > 0
-        if game.item_prototypes[signal_name] then
-          stack_count = count / game.item_prototypes[signal_name].stack_size
+        if prototypes.item[signal_name] then
+          stack_count = count / prototypes.item[signal_name].stack_size
         end
       end
 
@@ -395,7 +395,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
       if trainStop.parked_train_faces_stop then --train faces forwards >> iterate normal
         for i=1, #carriages do
           local signal_type = format("ltn-position-any-%s", carriages[i].type)
-          if game.virtual_signal_prototypes[signal_type] then
+          if prototypes.virtual_signal[signal_type] then
             if encoded_positions_by_type[signal_type] then
               encoded_positions_by_type[signal_type] = encoded_positions_by_type[signal_type] + 2^(i-1)
             else
@@ -406,7 +406,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
             log(format("Error: signal \"%s\" not found!", signal_type))
           end
           local signal_name = format("ltn-position-%s", carriages[i].name)
-          if game.virtual_signal_prototypes[signal_name] then
+          if prototypes.virtual_signal[signal_name] then
             if encoded_positions_by_name[signal_name] then
               encoded_positions_by_name[signal_name] = encoded_positions_by_name[signal_name] + 2^(i-1)
             else
@@ -421,7 +421,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
         n = 0
         for i=#carriages, 1, -1 do
           local signal_type = format("ltn-position-any-%s", carriages[i].type)
-          if game.virtual_signal_prototypes[signal_type] then
+          if prototypes.virtual_signal[signal_type] then
             if encoded_positions_by_type[signal_type] then
               encoded_positions_by_type[signal_type] = encoded_positions_by_type[signal_type] + 2^n
             else
@@ -432,7 +432,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
             log(format("Error: signal \"%s\" not found!", signal_type))
           end
           local signal_name = format("ltn-position-%s", carriages[i].name)
-          if game.virtual_signal_prototypes[signal_name] then
+          if prototypes.virtual_signal[signal_name] then
             if encoded_positions_by_name[signal_name] then
               encoded_positions_by_name[signal_name] = encoded_positions_by_name[signal_name] + 2^n
             else
