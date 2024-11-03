@@ -308,14 +308,10 @@ end)
 script.on_init(function()
   -- format version string to "00.00.00"
   local oldVersion, newVersion = nil
+  local newVersionString = script.active_mods[MOD_NAME]
 
-  for name, version in pairs(script.active_mods) do
-    if(name == "LogisticTrainNetwork") then
-      local newVersionString = version
-      if newVersionString then
-        newVersion = format("%02d.%02d.%02d", match(newVersionString, "(%d+).(%d+).(%d+)"))
-      end
-    end
+  if newVersionString then
+    newVersion = format("%02d.%02d.%02d", match(newVersionString, "(%d+).(%d+).(%d+)"))
   end
 
   initialize(oldVersion, newVersion)
