@@ -119,7 +119,7 @@ function UpdateStop(stopID, stop)
   local locked_slots = 0
 
   -- get circuit values 0.16.24
-  local signals = mergeSignals() -- merge red and green signals.
+  local signals = mergeSignals(stop) -- merge red and green signals.
   if signals == nil or not signals then return end  -- either lamp and lampctrl are not connected or lampctrl has no output signal
 
   local signals_filtered = {}
@@ -351,8 +351,8 @@ end
 
 function setLamp(trainStop, color, count)
   -- skip invalid stops and colors
-  -- Validate the train stop and ensure the color exists in ColorLookup
-  if trainStop and trainStop.lamp_control and trainStop.lamp_control.valid and ColorLookup[color] then
+  -- Validate the train stop and ensure the color exists in ColorLookupRGB
+  if trainStop and trainStop.lamp_control and trainStop.lamp_control.valid and ColorLookupRGB[color] then
     trainStop.lamp_control.get_control_behavior().get_section(1).set_slot(1,
     {
       value= { type="virtual", name="signal-white", quality="normal"},
@@ -364,7 +364,7 @@ function setLamp(trainStop, color, count)
   return false
 end
 
-function mergeSignals()
+function mergeSignals(stop)
   local signals = stop.input.get_circuit_network(defines.wire_connector_id.circuit_red).signals
   local signalsGreen = stop.input.get_circuit_network(defines.wire_connector_id.circuit_green).signals
   if signals == nil or signalsGreen == nil then return end
@@ -500,7 +500,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
   -- will reset if called with no parked train
   if index > 0 then
 
-    local signal_from_stop = trainStop.output.get_control_behavior.get_section(1).get_slot(1)
+    local signal_from_stop = trainStop.output.get_control_behavior.sections
     -- log("[LTN] "..tostring(trainStop.entity.backer_name).. " displaying "..#signals.."/"..tostring(trainStop.output.get_control_behavior().signals_count).." signals.")
     
     while #signals > #signal_from_stop do
@@ -511,10 +511,10 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
       if message_level >= 1 then printmsg({"ltn-message.error-stop-output-truncated", tostring(trainStop.entity.backer_name), tostring(trainStop.parked_train), #signal_from_stop, index-#signals}, trainStop.entity.force) end
       if debug_log then log("(UpdateStopOutput) Inventory of train "..tostring(trainStop.parked_train.id).." at stop "..tostring(trainStop.entity.backer_name).." exceeds stop output limit of "..#signal_from_stop.." by "..index-#signals.." signals.") end
     end
-    trainStop.output.get_control_behavior.get_section(1).set_slot(1,signals)
+    --trainStop.output.get_control_behavior.get_section(1).set_slot(1,signals)
     if debug_log then log("(UpdateStopOutput) Updating signals for "..tostring(trainStop.entity.backer_name)..": train "..tostring(trainStop.parked_train.id)..": "..index.." signals") end
   else
-    trainStop.output.get_section(1).clear_slot(1)
+    --trainStop.output.get_control_behavior().signals = nil
     if debug_log then log("(UpdateStopOutput) Resetting signals for "..tostring(trainStop.entity.backer_name)..".") end
   end
 end

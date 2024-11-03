@@ -112,17 +112,16 @@ function CreateStop(entity)
   lampctrl.destructible = false -- don't bother checking if alive
 
   -- connect lamp and control
-  if (lampctrl.get_control_behavior().sections_count == 0) then 
+  if (lampctrl.get_control_behavior().sections_count == 0) then
     lampctrl.get_control_behavior().add_section()
   end
-  lampctrl.get_control_behavior().get_section(1).set_slot(1,{value={type="virtual",name="signal-white",quality="normal"},min=661,max=661})
+  lampctrl.get_control_behavior().get_section(1).set_slot(1,{value= {type="virtual",name="signal-white",quality="normal"},min=661,max=661})
   input.get_wire_connector(defines.wire_connector_id.combinator_input_red, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_red, true), false, defines.wire_origin.script)
   input.get_wire_connector(defines.wire_connector_id.combinator_input_green, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_green, true), false, defines.wire_origin.script)
   input.get_or_create_control_behavior().use_colors = true
   input.get_or_create_control_behavior().color_mode = defines.control_behavior.lamp.color_mode.packed_rgb
-  input.get_or_create_control_behavior().rgb_signal = {type="virtual",name="signal-white"}
+  input.get_or_create_control_behavior().rgb_signal = { type="virtual", name="signal-white"}
   input.always_on= true
-
 
   if output == nil then -- create new
     output = entity.surface.create_entity
@@ -164,6 +163,7 @@ function CreateStop(entity)
     providing_threshold_stacks = 0,
     provider_priority = 0,
     locked_slots = 0,
+    quality = "normal",
   }
   UpdateStopOutput(storage.LogisticTrainStops[entity.unit_number])
 
