@@ -511,10 +511,10 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
       if message_level >= 1 then printmsg({"ltn-message.error-stop-output-truncated", tostring(trainStop.entity.backer_name), tostring(trainStop.parked_train), #signal_from_stop, index-#signals}, trainStop.entity.force) end
       if debug_log then log("(UpdateStopOutput) Inventory of train "..tostring(trainStop.parked_train.id).." at stop "..tostring(trainStop.entity.backer_name).." exceeds stop output limit of "..#signal_from_stop.." by "..index-#signals.." signals.") end
     end
-    --trainStop.output.get_control_behavior.get_section(1).set_slot(1,signals)
+    --trainStop.output.get_control_behavior().parameters = signals
     if debug_log then log("(UpdateStopOutput) Updating signals for "..tostring(trainStop.entity.backer_name)..": train "..tostring(trainStop.parked_train.id)..": "..index.." signals") end
   else
-    --trainStop.output.get_control_behavior().signals = nil
+    --trainStop.output.get_control_behavior().clear_slot = nil
     if debug_log then log("(UpdateStopOutput) Resetting signals for "..tostring(trainStop.entity.backer_name)..".") end
   end
 end
