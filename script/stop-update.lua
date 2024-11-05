@@ -132,6 +132,14 @@ function UpdateStop(stopID, stop)
   local abs = math.abs
 
   for _,v in pairs(signals) do
+    -- if v.signal.type == nil then
+    --   printmsg("signal name: " ..v.signal.name.. "  Signal type is nil")
+    -- else
+    --   printmsg("signal name: " ..v.signal.name.. "  signal type:" ..v.signal.type)
+    -- end
+    if v.signal.type == nil then
+      v.signal.type = "item"
+    end
     if v.signal.name and v.signal.type then
       if v.signal.type ~= signal_type_virtual then
         -- add item and fluid signals to new array
@@ -238,7 +246,6 @@ function UpdateStop(stopID, stop)
     if stop.parked_train_id and storage.Dispatcher.availableTrains[stop.parked_train_id] then
       remove_available_train(stop.parked_train_id)
     end
-
     for signal, count in pairs(signals_filtered) do
       local signal_type = signal.type
       local signal_name = signal.name
@@ -299,8 +306,8 @@ function UpdateStop(stopID, stop)
       if signal_type == "item" then
         useProvideStackThreshold = providing_threshold_stacks > 0
         useRequestStackThreshold = requesting_threshold_stacks > 0
-        if game.item_prototypes[signal_name] then
-          stack_count = count / game.item_prototypes[signal_name].stack_size
+        if prototypes.item[signal_name] then
+          stack_count = count / prototypes.item[signal_name].stack_size
         end
       end
 
@@ -452,6 +459,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
         for _, c in pairs(conditions) do
           if c.condition and c.condition.first_signal then -- loading without mods can make first signal nil?
             if c.type == "item_count" then
+              print("Go set inventory stuff")
               if (c.condition.comparator == "=" and c.condition.constant == 0) then
                 --train expects to be unloaded of each of this item
                 inventory[c.condition.first_signal.name] = nil
@@ -460,6 +468,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
                 inventory[c.condition.first_signal.name] = c.condition.constant
               end
             elseif c.type == "fluid_count" then
+              print("Go set fluid_inventory stuff")
               if (c.condition.comparator == "=" and c.condition.constant == 0) then
                 --train expects to be unloaded of each of this fluid
                 fluidInventory[c.condition.first_signal.name] = -1
@@ -474,14 +483,17 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
 
       -- output expected inventory contents
       for k,v in pairs(inventory) do
-        index = index+1
-        table.insert(signals, {index = index, signal = {value={type="item", name=k, quality="normal"}, min=v}})
+        if k ~= nil and type(v) ~= "table" then
+          index = index+1
+          table.insert(signals, {index = index, signal = {value={type="item", name=k, quality="normal"}, min=v}})
+        end
       end
       for k,v in pairs(fluidInventory) do
-        index = index+1
-        table.insert(signals, {index = index, signal = {value={type="fluid", name=k, quality="normal"}, min=v}})
+        if k ~= nil and type(v) ~= "table" then
+          index = index+1
+          table.insert(signals, {index = index, signal = {value={type="fluid", name=k, quality="normal"}, min=v}})
+        end  
       end
-
     end -- not trainStop.is_depot
 
   end
@@ -500,8 +512,9 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
     end
 
     if (trainStop.output.get_control_behavior().sections_count == 0) then trainStop.output.get_control_behavior().add_section() end
-    for i = 1, index do
+    for i = 1, #signals do
       signal = signals[i].signal
+      -- printmsg("index: " ..i.." --Signal: " ..signal.value.name.. "  min: " ..signal.min)
       trainStop.output.get_control_behavior().get_section(1).set_slot(i,signal)
     end
 
