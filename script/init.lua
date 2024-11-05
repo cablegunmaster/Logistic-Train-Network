@@ -242,13 +242,13 @@ local function updateAllTrains()
   -- add still valid trains back to stops
   for force_name, force in pairs(game.forces) do
     local trains = game.train_manager.get_trains({force=force})
-    -- if trains then
-    --   for _, train in pairs(trains) do
-    --     if train.station and ltn_stop_entity_names[train.station.name] then
-    --       TrainArrives(train)
-    --     end
-    --   end
-    -- end
+    if trains then
+      for _, train in pairs(trains) do
+        if train.station and ltn_stop_entity_names[train.station.name] then
+          TrainArrives(train)
+        end
+      end
+    end
   end
 end
 
@@ -340,5 +340,5 @@ script.on_configuration_changed(function(data)
   initializeTrainStops()
   updateAllTrains()
   registerEvents()
-  log("[LTN] ".. MOD_NAME.." "..tostring(game.active_mods[MOD_NAME]).." configuration updated.")
+  log("[LTN] ".. MOD_NAME.." "..tostring(script.active_mods[MOD_NAME]).." configuration updated.")
 end)

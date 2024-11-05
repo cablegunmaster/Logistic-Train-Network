@@ -24,7 +24,7 @@ function CreateStop(entity)
       {entity.position.x + 0.001 - 1 + stop_offset, entity.position.y + 0.001 - 1},
       {entity.position.x - 0.001 + 1 + stop_offset, entity.position.y - 0.001}
     }
-  elseif entity.direction == 2 then --WE
+  elseif entity.direction == 4 then --WE
     posIn = {entity.position.x, entity.position.y + stop_offset}
     posOut = {entity.position.x, entity.position.y - 1 + stop_offset}
     rotOut = 2
@@ -32,7 +32,7 @@ function CreateStop(entity)
       {entity.position.x + 0.001, entity.position.y + 0.001 - 1 + stop_offset},
       {entity.position.x - 0.001 + 1, entity.position.y - 0.001 + 1 + stop_offset}
     }
-  elseif entity.direction == 4 then --NS
+  elseif entity.direction == 8 then --NS
     posIn = {entity.position.x - 1 - stop_offset, entity.position.y}
     posOut = {entity.position.x - stop_offset, entity.position.y}
     rotOut = 4
@@ -40,7 +40,7 @@ function CreateStop(entity)
       {entity.position.x + 0.001 - 1 - stop_offset, entity.position.y + 0.001},
       {entity.position.x - 0.001 + 1 - stop_offset, entity.position.y - 0.001 + 1}
     }
-  elseif entity.direction == 6 then --EW
+  elseif entity.direction == 12 then --EW
     posIn = {entity.position.x - 1, entity.position.y - 1 - stop_offset}
     posOut = {entity.position.x - 1, entity.position.y - stop_offset}
     rotOut = 6
@@ -110,16 +110,16 @@ function CreateStop(entity)
   lampctrl.operable = false -- disable gui
   lampctrl.minable = false
   lampctrl.destructible = false -- don't bother checking if alive
+  input.always_on= true
 
   -- connect lamp and control
   if (lampctrl.get_control_behavior().sections_count == 0) then lampctrl.get_control_behavior().add_section() end
-  lampctrl.get_control_behavior().get_section(1).set_slot(1,{value={type="virtual",name="signal-white",quality="normal"},min=661,max=661})
-  input.get_wire_connector(defines.wire_connector_id.combinator_input_red, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_red, true), false, defines.wire_origin.script)
-  input.get_wire_connector(defines.wire_connector_id.combinator_input_green, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_green, true), false, defines.wire_origin.script)
+  lampctrl.get_control_behavior().get_section(1).set_slot(1,{value={type="virtual",name="signal-white",quality="normal"},min=661})
+  input.get_wire_connector(defines.wire_connector_id.circuit_red, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_red, true), false, defines.wire_origin.script)
+  input.get_wire_connector(defines.wire_connector_id.circuit_green, true).connect_to(lampctrl.get_wire_connector(defines.wire_connector_id.circuit_green, true), false, defines.wire_origin.script)
   input.get_or_create_control_behavior().use_colors = true
   input.get_or_create_control_behavior().color_mode = defines.control_behavior.lamp.color_mode.packed_rgb
   input.get_or_create_control_behavior().rgb_signal = {type="virtual",name="signal-white"}
-  input.always_on= true
 
   if output == nil then -- create new
     output = entity.surface.create_entity

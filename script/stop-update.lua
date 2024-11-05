@@ -354,18 +354,14 @@ function UpdateStop(stopID, stop)
   end
 end
 
-
-
 function setLamp(trainStop, color, count)
   -- skip invalid stops and colors
   if trainStop and trainStop.lamp_control.valid and ColorLookup[color] then
-    -- trainStop.lamp_control.get_control_behavior().parameters = {{index = 1, signal = {type="virtual",name=ColorLookup[color]}, count = count }}
     trainStop.lamp_control.get_control_behavior().get_section(1).set_slot(1,{value={type="virtual",name="signal-white",quality="normal"},min=ColorLookupRGB[color],max=ColorLookupRGB[color]})
     return true
   end
   return false
 end
-
 
 function UpdateStopOutput(trainStop, ignore_existing_cargo)
   -- skip invalid stop outputs
@@ -388,7 +384,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
       if trainStop.parked_train_faces_stop then --train faces forwards >> iterate normal
         for i=1, #carriages do
           local signal_type = format("ltn-position-any-%s", carriages[i].type)
-          if game.virtual_signal_prototypes[signal_type] then
+          if prototypes.virtual_signal[signal_type] then
             if encoded_positions_by_type[signal_type] then
               encoded_positions_by_type[signal_type] = encoded_positions_by_type[signal_type] + 2^(i-1)
             else
@@ -399,7 +395,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
             log(format("Error: signal \"%s\" not found!", signal_type))
           end
           local signal_name = format("ltn-position-%s", carriages[i].name)
-          if game.virtual_signal_prototypes[signal_name] then
+          if prototypes.virtual_signal[signal_name] then
             if encoded_positions_by_name[signal_name] then
               encoded_positions_by_name[signal_name] = encoded_positions_by_name[signal_name] + 2^(i-1)
             else
@@ -414,7 +410,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
         n = 0
         for i=#carriages, 1, -1 do
           local signal_type = format("ltn-position-any-%s", carriages[i].type)
-          if game.virtual_signal_prototypes[signal_type] then
+          if prototypes.virtual_signal[signal_type] then
             if encoded_positions_by_type[signal_type] then
               encoded_positions_by_type[signal_type] = encoded_positions_by_type[signal_type] + 2^n
             else
@@ -425,7 +421,7 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
             log(format("Error: signal \"%s\" not found!", signal_type))
           end
           local signal_name = format("ltn-position-%s", carriages[i].name)
-          if game.virtual_signal_prototypes[signal_name] then
+          if prototypes.virtual_signal[signal_name] then
             if encoded_positions_by_name[signal_name] then
               encoded_positions_by_name[signal_name] = encoded_positions_by_name[signal_name] + 2^n
             else
@@ -441,11 +437,11 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
 
       for k ,v in pairs (encoded_positions_by_type) do
         index = index+1
-        table.insert(signals, {index = index, signal = {type="virtual",name=k,quality="normal"}, count = v })
+        table.insert(signals, {index = index, signal = {value={type="virtual", name=k, quality="normal"}, min=v}})
       end
       for k ,v in pairs (encoded_positions_by_name) do
         index = index+1
-        table.insert(signals, {index = index, signal = {type="virtual",name=k,quality="normal"}, count = v })
+        table.insert(signals, {index = index, signal = {value={type="virtual", name=k, quality="normal"}, min=v}})
       end
     end
 
@@ -479,11 +475,11 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
       -- output expected inventory contents
       for k,v in pairs(inventory) do
         index = index+1
-        table.insert(signals, {index = index, signal = {type="item", name=k, quality="normal"}, count = v})
+        table.insert(signals, {index = index, signal = {value={type="item", name=k, quality="normal"}, min=v}})
       end
       for k,v in pairs(fluidInventory) do
         index = index+1
-        table.insert(signals, {index = index, signal = {type="fluid", name=k, quality="normal"}, count = v})
+        table.insert(signals, {index = index, signal = {value={type="fluid", name=k, quality="normal"}, min=v}})
       end
 
     end -- not trainStop.is_depot
@@ -492,20 +488,26 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
   -- will reset if called with no parked train
   if index > 0 then
     -- log("[LTN] "..tostring(trainStop.entity.backer_name).. " displaying "..#signals.."/"..tostring(trainStop.output.get_control_behavior().signals_count).." signals.")
-
-    while #signals > trainStop.output.get_control_behavior().signals_count do
-      -- log("[LTN] removing signal "..tostring(signals[#signals].signal.name))
-      table.remove(signals)
-    end
+    
+    -- I had to remove some code that remove signal from signals ?? I don't understand what it's for
+    -- while #signals > trainStop.output.get_control_behavior().signals_count do
+    --   -- log("[LTN] removing signal "..tostring(signals[#signals].signal.name))
+    --   table.remove(signals)
+    -- end
     if index ~= #signals then
-      if message_level >= 1 then printmsg({"ltn-message.error-stop-output-truncated", tostring(trainStop.entity.backer_name), tostring(trainStop.parked_train), trainStop.output.get_control_behavior().signals_count, index-#signals}, trainStop.entity.force) end
-      if debug_log then log("(UpdateStopOutput) Inventory of train "..tostring(trainStop.parked_train.id).." at stop "..tostring(trainStop.entity.backer_name).." exceeds stop output limit of "..trainStop.output.get_control_behavior().signals_count.." by "..index-#signals.." signals.") end
+      if message_level >= 1 then printmsg({"ltn-message.error-stop-output-truncated", tostring(trainStop.entity.backer_name), tostring(trainStop.parked_train), trainStop.output.get_control_behavior().get_section(1).filters_count, index-#signals}, trainStop.entity.force) end
+      if debug_log then log("(UpdateStopOutput) Inventory of train "..tostring(trainStop.parked_train.id).." at stop "..tostring(trainStop.entity.backer_name).." exceeds stop output limit of "..trainStop.output.get_control_behavior().get_section(1).filters_count.." by "..index-#signals.." signals.") end
     end
-    trainStop.output.get_control_behavior().get_section(1).set_slot(1,signals)
+
+    if (trainStop.output.get_control_behavior().sections_count == 0) then trainStop.output.get_control_behavior().add_section() end
+    for i = 1, index do
+      signal = signals[i].signal
+      trainStop.output.get_control_behavior().get_section(1).set_slot(i,signal)
+    end
+
     if debug_log then log("(UpdateStopOutput) Updating signals for "..tostring(trainStop.entity.backer_name)..": train "..tostring(trainStop.parked_train.id)..": "..index.." signals") end
   else
-    trainStop.output.get_control_behavior().get_section(1).clear_slot(1)
+    trainStop.output.get_control_behavior().remove_section(1)
     if debug_log then log("(UpdateStopOutput) Resetting signals for "..tostring(trainStop.entity.backer_name)..".") end
   end
 end
-

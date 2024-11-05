@@ -53,6 +53,7 @@ ErrorCodes = {
   [2] = "pink",   -- duplicate stop name
 }
 
+-- Should no longer be used but I haven't checked
 ColorLookup = {
   red = "signal-red",
   green = "signal-green",
