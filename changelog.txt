@@ -2,7 +2,7 @@
 Version: 2.0.0
 Date: 2024-11-02
   Features:
-    - Porting to 2.0 untested working on making it proper.
+    - Porting to 2.0 done by PSR_J0740
     - global -> storage
 ---------------------------------------------------------------------------------------------------
 Version: 1.18.6

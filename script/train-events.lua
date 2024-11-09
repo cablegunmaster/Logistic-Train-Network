@@ -32,8 +32,8 @@ function TrainArrives(train)
     stop.parked_train = train
     stop.parked_train_id = train.id
 
-    local frontDistance = Distance(train.front_stock.position, train.station.position)
-    local backDistance = Distance(train.back_stock.position, train.station.position)
+    local frontDistance = Get_Distance(train.front_stock.position, train.station.position)
+    local backDistance = Get_Distance(train.back_stock.position, train.station.position)
     if frontDistance > backDistance then
       stop.parked_train_faces_stop = false
     else
@@ -354,6 +354,8 @@ function TrainLeaves(trainID)
 
   storage.StoppedTrains[trainID] = nil
 end
+
+-- local reverse_defines = require('__flib__.reverse-defines')
 
 function OnTrainStateChanged(event)
   -- log(game.tick.." (OnTrainStateChanged) Train name: "..tostring(Get_Train_Name(event.train))..", train.id:"..tostring(event.train.id).." stop: "..tostring(event.train.station and event.train.station.backer_name)..", state: "..reverse_defines.train_state[event.old_state].." > "..reverse_defines.train_state[event.train.state] )

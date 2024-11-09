@@ -87,7 +87,7 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
       dispatcher_updates_per_tick = 1
     end
     script.on_nth_tick(nil)
-    if next(storage.LogisticTrainStops) then
+    if next(global.LogisticTrainStops) then
       script.on_nth_tick(dispatcher_nth_tick, OnTick)
     end
   end

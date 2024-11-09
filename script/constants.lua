@@ -53,6 +53,19 @@ ErrorCodes = {
   [2] = "pink",   -- duplicate stop name
 }
 
+-- Should no longer be used but I haven't checked
+ColorLookup = {
+  red = "signal-red",
+  green = "signal-green",
+  blue = "signal-blue",
+  yellow = "signal-yellow",
+  pink = "signal-pink",
+  cyan = "signal-cyan",
+  white = "signal-white",
+  grey = "signal-grey",
+  black = "signal-black"
+}
+
 ColorLookupRGB = {
   red = 16711680,       -- RGB: (255, 0, 0)
   green = 65280,        -- RGB: (0, 255, 0)

@@ -14,6 +14,7 @@ script.on_event(defines.events.on_forces_merging, function(event)
   end
 end)
 
+
 ---------------------------------- MAIN LOOP ----------------------------------
 
 function OnTick(event)
@@ -385,7 +386,7 @@ local function getStationDistance(stationA, stationB)
     --log(stationPair.." found, distance: "..storage.StopDistances[stationPair])
     return storage.StopDistances[stationPair]
   else
-    local dist = Distance(stationA.position, stationB.position)
+    local dist = Get_Distance(stationA.position, stationB.position)
     storage.StopDistances[stationPair] = dist
     --log(stationPair.." calculated, distance: "..dist)
     return dist
@@ -751,8 +752,9 @@ function ProcessRequest(reqIndex, request)
     if stop.entity.valid and (stop.entity.unit_number == fromID or stop.entity.unit_number == toID) then
       table.insert(stop.active_deliveries, selectedTrain.id)
       -- only update blue signal count; change to yellow if it wasn't blue
-      local current_signal = stop.lamp_control.get_control_behavior().get_signal(1)
-      if current_signal and current_signal.signal.name == "signal-blue" then
+      local current_signal = stop.lamp_control.get_control_behavior().get_section(1).get_slot(1)
+      if current_signal and current_signal.value.name == "signal-white" and current_signal.min == ColorLookupRGB["blue"] then
+      -- if current_signal and current_signal.signal.name == "signal-white" and current_signal.signal.min ~= then
         setLamp(stop, "blue", #stop.active_deliveries)
       else
         setLamp(stop, "yellow", #stop.active_deliveries)

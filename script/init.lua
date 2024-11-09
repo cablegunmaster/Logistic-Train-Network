@@ -226,30 +226,24 @@ local function updateAllTrains()
   storage.StoppedTrains = {} -- trains stopped at LTN stops
   storage.StopDistances = {} -- reset station distance lookup table
   storage.WagonCapacity = {  --preoccupy table with wagons to ignore at 0 capacity
-    ["rail-tanker"] = 0
+    ["fluid-wagon"] = 0
   }
   storage.Dispatcher.availableTrains_total_capacity = 0
   storage.Dispatcher.availableTrains_total_fluid_capacity = 0
   storage.Dispatcher.availableTrains = {}
 
-  -- remove all parked trains from logistic stops
+  -- remove all parked train from logistic stops
   for stopID, stop in pairs (storage.LogisticTrainStops) do
     stop.parked_train = nil
     stop.parked_train_id = nil
-    UpdateStopOutput(stop, true)
+    UpdateStopOutput(stop)
   end
 
   -- add still valid trains back to stops
-  for _, surface in pairs(game.surfaces) do
-    for _, force in pairs(game.forces) do
-      local locomotive = surface.find_entities_filtered {
-        type = "locomotive",
-        force = force.name --only trains for this force
-      }
-
-      -- Process each train found
-      for _, loco in pairs(locomotive) do
-        local train = loco.train
+  for force_name, force in pairs(game.forces) do
+    local trains = game.train_manager.get_trains({force=force})
+    if trains then
+      for _, train in pairs(trains) do
         if train.station and ltn_stop_entity_names[train.station.name] then
           TrainArrives(train)
         end
@@ -309,11 +303,9 @@ script.on_init(function()
   -- format version string to "00.00.00"
   local oldVersion, newVersion = nil
   local newVersionString = script.active_mods[MOD_NAME]
-
   if newVersionString then
     newVersion = format("%02d.%02d.%02d", match(newVersionString, "(%d+).(%d+).(%d+)"))
   end
-
   initialize(oldVersion, newVersion)
   initializeTrainStops()
   updateAllTrains()
@@ -348,7 +340,5 @@ script.on_configuration_changed(function(data)
   initializeTrainStops()
   updateAllTrains()
   registerEvents()
-  if newVersion then
-    log("[LTN] ".. MOD_NAME.." version  "..tostring(newVersionString).." configuration updated.")
-  end
+  log("[LTN] ".. MOD_NAME.." "..tostring(script.active_mods[MOD_NAME]).." configuration updated.")
 end)
