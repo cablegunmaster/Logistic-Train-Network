@@ -81,7 +81,7 @@ ColorLookupRGB = {
 -- cache often used strings and functions
 format = string.format
 match = string.match
-match_string = "([^,]+),([^,]+)"
+match_string = "([^,]+),([^,]+),([^,]+)"
 btest = bit32.btest
 band = bit32.band
 min = math.min

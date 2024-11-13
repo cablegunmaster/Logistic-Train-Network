@@ -233,7 +233,7 @@ function NewScheduleRecord(stationName, condType, condComp, itemlist, countOverr
       end
 
       -- itemlist = {first_signal.type, first_signal.name, constant}
-      local cond = {comparator = condComp, first_signal = {type = itemlist[i].type, name = itemlist[i].name}, constant = countOverride or itemlist[i].count}
+      local cond = {comparator = condComp, first_signal = {type = itemlist[i].type, name = itemlist[i].name, quality = itemlist[i].quality}, constant = countOverride or itemlist[i].count}
       record.wait_conditions[#record.wait_conditions+1] = {type = condFluid or condType, compare_type = "and", condition = cond }
     end
 
@@ -509,7 +509,7 @@ function ProcessRequest(reqIndex, request)
   end
 
   -- find providers for requested item
-  local itype, iname = match(item, match_string)
+  local itype, iname, iquality = match(item, match_string)
   if not (itype and iname and (prototypes.item[iname] or prototypes.fluid[iname])) then
     if message_level >= 1 then printmsg({"ltn-message.error-parse-item", item}, requestForce) end
     if debug_log then log("(ProcessRequests) could not parse "..item) end
@@ -580,14 +580,14 @@ function ProcessRequest(reqIndex, request)
   end
 
   storage.Dispatcher.Requests_by_Stop[toID][item] = nil -- remove before merge so it's not added twice
-  local loadingList = { {type=itype, name=iname, localname=localname, count=deliverySize, stacks=stacks} }
+  local loadingList = { {type=itype, name=iname, quality=iquality, localname=localname, count=deliverySize, stacks=stacks} }
   local totalStacks = stacks
   if debug_log then log("created new order "..from.." >> "..to..": "..deliverySize.." "..item.." in "..stacks.."/"..totalStacks.." stacks, min length: "..min_carriages.." max length: "..max_carriages) end
 
   -- find possible mergeable items, fluids can't be merged in a sane way
   if itype ~= "fluid" then
     for merge_item, merge_count_req in pairs(storage.Dispatcher.Requests_by_Stop[toID]) do
-      local merge_type, merge_name = match(merge_item, match_string)
+      local merge_type, merge_name, merge_quality = match(merge_item, match_string)
       if merge_type and merge_name and prototypes.item[merge_name] then
         local merge_localname = prototypes.item[merge_name].localised_name
         -- get current provider for requested item
@@ -601,11 +601,11 @@ function ProcessRequest(reqIndex, request)
           local merge_stacks = ceil(merge_deliverySize / prototypes.item[merge_name].stack_size) -- calculate amount of stacks item count will occupy
 
           -- add to loading list
-          loadingList[#loadingList+1] = {type=merge_type, name=merge_name, localname=merge_localname, count=merge_deliverySize, stacks=merge_stacks}
+          loadingList[#loadingList+1] = {type=merge_type, name=merge_name, quality=merge_quality, localname=merge_localname, count=merge_deliverySize, stacks=merge_stacks}
           totalStacks = totalStacks + merge_stacks
           -- order.totalStacks = order.totalStacks + merge_stacks
           -- order.loadingList[#order.loadingList+1] = loadingList
-          if debug_log then log("inserted into order "..from.." >> "..to..": "..merge_deliverySize.." "..merge_item.." in "..merge_stacks.."/"..totalStacks.." stacks.") end
+          if debug_log then log("inserted into order "..from.." >> "..to..": "..merge_deliverySize.." "..merge_item.. " Q: " ..merge_quality.. " in "..merge_stacks.."/"..totalStacks.." stacks.") end
         end
       end
     end
@@ -691,7 +691,7 @@ function ProcessRequest(reqIndex, request)
   local shipment = {}
   if debug_log then log("Creating Delivery: "..totalStacks.." stacks, "..from.." >> "..to) end
   for i=1, #loadingList do
-    local loadingListItem = loadingList[i].type..","..loadingList[i].name
+    local loadingListItem = loadingList[i].type..","..loadingList[i].name..","..loadingList[i].quality
     -- store Delivery
     shipment[loadingListItem] = loadingList[i].count
 

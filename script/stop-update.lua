@@ -249,7 +249,13 @@ function UpdateStop(stopID, stop)
     for signal, count in pairs(signals_filtered) do
       local signal_type = signal.type
       local signal_name = signal.name
-      local item = signal_type..","..signal_name
+      local signal_quality = nil
+      if signal.quality then
+        signal_quality = signal.quality
+      else
+          signal_quality = "normal"  -- Replace "default_value" with whatever default makes sense
+      end
+      local item = signal_type..","..signal_name..","..signal_quality
 
       for trainID, delivery in pairs (storage.Dispatcher.Deliveries) do
         local deliverycount = delivery.shipment[item]
@@ -465,7 +471,10 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
                 inventory[c.condition.first_signal.name] = nil
               elseif c.condition.comparator == "≥" then
                 --train expects to be loaded to x of this item
-                inventory[c.condition.first_signal.name] = c.condition.constant
+                inventory[c.condition.first_signal.name] = {
+                  count = c.condition.constant,
+                  quality = c.condition.first_signal.quality or "normal"  -- Defaults to "normal" if quality is missing
+              }
               end
             elseif c.type == "fluid_count" then
               print("Go set fluid_inventory stuff")
@@ -483,9 +492,13 @@ function UpdateStopOutput(trainStop, ignore_existing_cargo)
 
       -- output expected inventory contents
       for k,v in pairs(inventory) do
-        if k ~= nil and type(v) ~= "table" then
+        if k ~= nil and type(v) == "table" then
           index = index+1
-          table.insert(signals, {index = index, signal = {value={type="item", name=k, quality="normal"}, min=v}})
+          if k == 1 then
+            table.insert(signals, {index = index, signal = {value={type="item", name=v.name, quality=v.quality}, min=v.count}})
+          else
+            table.insert(signals, {index = index, signal = {value={type="item", name=k, quality=v.quality}, min=v.count}})
+          end
         end
       end
       for k,v in pairs(fluidInventory) do
