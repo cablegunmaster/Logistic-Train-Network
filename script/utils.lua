@@ -9,17 +9,14 @@
 local function getCargoWagonCapacity(entity)
   local capacity = entity.prototype.get_inventory_size(defines.inventory.cargo_wagon)
   -- log("(getCargoWagonCapacity) capacity for "..entity.name.." = "..capacity)
-  global.WagonCapacity[entity.name] = capacity
+  storage.WagonCapacity[entity.name] = capacity
   return capacity
 end
 
 local function getFluidWagonCapacity(entity)
-  local capacity = 0
-  for n=1, #entity.fluidbox do
-    capacity = capacity + entity.fluidbox.get_capacity(n)
-  end
+  local capacity = entity.prototype.fluid_capacity
   -- log("(getFluidWagonCapacity) capacity for "..entity.name.." = "..capacity)
-  global.WagonCapacity[entity.name] = capacity
+  storage.WagonCapacity[entity.name] = capacity
   return capacity
 end
 
@@ -29,11 +26,16 @@ function GetTrainCapacity(train)
   local fluidCapacity = 0
   if train and train.valid then
     for _,wagon in pairs(train.cargo_wagons) do
-      local capacity = global.WagonCapacity[wagon.name] or getCargoWagonCapacity(wagon)
+      local capacity = storage.WagonCapacity[wagon.name] or getCargoWagonCapacity(wagon)
       inventorySize = inventorySize + capacity
     end
     for _,wagon in pairs(train.fluid_wagons) do
-      local capacity = global.WagonCapacity[wagon.name] or getFluidWagonCapacity(wagon)
+      local capacity = 0
+      if storage.WagonCapacity[wagon.name] == 0 then
+        capacity = getFluidWagonCapacity(wagon)
+      else
+        capacity = storage.WagonCapacity[wagon.name]
+      end
       fluidCapacity = fluidCapacity + capacity
     end
   end
