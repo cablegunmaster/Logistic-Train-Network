@@ -25,7 +25,7 @@ ltn_stop_in.minable = nil
 ltn_stop_in.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 ltn_stop_in.selection_priority = (ltn_stop_in.selection_priority or 50) + 10 -- increase priority to default + 10
 ltn_stop_in.collision_box = {{-0.15, -0.15}, {0.15, 0.15}}
-ltn_stop_in.collision_mask = {"rail-layer"} -- collide only with rail entities
+ltn_stop_in.collision_mask = {layers={train=true}} -- collide only with rail entities
 ltn_stop_in.energy_usage_per_tick = "10W"
 ltn_stop_in.light = { intensity = 1, size = 6 }
 ltn_stop_in.energy_source = {type="void"}
@@ -39,19 +39,18 @@ ltn_stop_out.minable = nil
 ltn_stop_out.selection_box = {{-0.5, -0.5}, {0.5, 0.5}}
 ltn_stop_out.selection_priority = (ltn_stop_out.selection_priority or 50) + 10 -- increase priority to default + 10
 ltn_stop_out.collision_box = {{-0.15, -0.15}, {0.15, 0.15}}
-ltn_stop_out.collision_mask = {"rail-layer"} -- collide only with rail entities
+ltn_stop_out.collision_mask = {layers={train=true}} -- collide only with rail entities
 ltn_stop_out.item_slot_count = 50
-ltn_stop_out.sprites = make_4way_animation_from_spritesheet(
-  { layers =
-    {
+ltn_stop_out.sprites = {
+  north = {
+    layers = {
       {
         filename = "__LogisticTrainNetwork__/graphics/entity/output.png",
         width = 58,
         height = 52,
         frame_count = 1,
         shift = util.by_pixel(0, 5),
-        hr_version =
-        {
+        hr_version = {
           scale = 0.5,
           filename = "__LogisticTrainNetwork__/graphics/entity/hr-output.png",
           width = 114,
@@ -67,8 +66,7 @@ ltn_stop_out.sprites = make_4way_animation_from_spritesheet(
         frame_count = 1,
         shift = util.by_pixel(9, 6),
         draw_as_shadow = true,
-        hr_version =
-        {
+        hr_version = {
           scale = 0.5,
           filename = "__base__/graphics/entity/combinator/hr-constant-combinator-shadow.png",
           width = 98,
@@ -79,7 +77,117 @@ ltn_stop_out.sprites = make_4way_animation_from_spritesheet(
         },
       },
     },
-  })
+  },
+  east = {
+    layers = {
+      {
+        filename = "__LogisticTrainNetwork__/graphics/entity/output.png",
+        width = 58,
+        height = 52,
+        frame_count = 1,
+        shift = util.by_pixel(0, 5),
+        hr_version = {
+          scale = 0.5,
+          filename = "__LogisticTrainNetwork__/graphics/entity/hr-output.png",
+          width = 114,
+          height = 102,
+          frame_count = 1,
+          shift = util.by_pixel(0, 5),
+        },
+      },
+      {
+        filename = "__base__/graphics/entity/combinator/constant-combinator-shadow.png",
+        width = 50,
+        height = 34,
+        frame_count = 1,
+        shift = util.by_pixel(9, 6),
+        draw_as_shadow = true,
+        hr_version = {
+          scale = 0.5,
+          filename = "__base__/graphics/entity/combinator/hr-constant-combinator-shadow.png",
+          width = 98,
+          height = 66,
+          frame_count = 1,
+          shift = util.by_pixel(8.5, 5.5),
+          draw_as_shadow = true,
+        },
+      },
+    },
+  },
+  south = {
+    layers = {
+      {
+        filename = "__LogisticTrainNetwork__/graphics/entity/output.png",
+        width = 58,
+        height = 52,
+        frame_count = 1,
+        shift = util.by_pixel(0, 5),
+        hr_version = {
+          scale = 0.5,
+          filename = "__LogisticTrainNetwork__/graphics/entity/hr-output.png",
+          width = 114,
+          height = 102,
+          frame_count = 1,
+          shift = util.by_pixel(0, 5),
+        },
+      },
+      {
+        filename = "__base__/graphics/entity/combinator/constant-combinator-shadow.png",
+        width = 50,
+        height = 34,
+        frame_count = 1,
+        shift = util.by_pixel(9, 6),
+        draw_as_shadow = true,
+        hr_version = {
+          scale = 0.5,
+          filename = "__base__/graphics/entity/combinator/hr-constant-combinator-shadow.png",
+          width = 98,
+          height = 66,
+          frame_count = 1,
+          shift = util.by_pixel(8.5, 5.5),
+          draw_as_shadow = true,
+        },
+      },
+    },
+  },
+  west = {
+    layers = {
+      {
+        filename = "__LogisticTrainNetwork__/graphics/entity/output.png",
+        width = 58,
+        height = 52,
+        frame_count = 1,
+        shift = util.by_pixel(0, 5),
+        hr_version = {
+          scale = 0.5,
+          filename = "__LogisticTrainNetwork__/graphics/entity/hr-output.png",
+          width = 114,
+          height = 102,
+          frame_count = 1,
+          shift = util.by_pixel(0, 5),
+        },
+      },
+      {
+        filename = "__base__/graphics/entity/combinator/constant-combinator-shadow.png",
+        width = 50,
+        height = 34,
+        frame_count = 1,
+        shift = util.by_pixel(9, 6),
+        draw_as_shadow = true,
+        hr_version = {
+          scale = 0.5,
+          filename = "__base__/graphics/entity/combinator/hr-constant-combinator-shadow.png",
+          width = 98,
+          height = 66,
+          frame_count = 1,
+          shift = util.by_pixel(8.5, 5.5),
+          draw_as_shadow = true,
+        },
+      },
+    },
+  },
+}
+
 
 local control_connection_points = {
   red = util.by_pixel(-3, -7),
@@ -94,7 +202,7 @@ ltn_lamp_control.next_upgrade = nil
 ltn_lamp_control.minable = nil
 ltn_lamp_control.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 ltn_lamp_control.collision_box = {{-0.0, -0.0}, {0.0, 0.0}}
-ltn_lamp_control.collision_mask = {} -- disable collision
+ltn_lamp_control.collision_mask = {layers={trigger_target=true}} -- disable collision
 ltn_lamp_control.item_slot_count = 50
 ltn_lamp_control.flags = {"not-blueprintable", "not-deconstructable", "placeable-off-grid"}
 ltn_lamp_control.sprites =

@@ -53,6 +53,7 @@ ErrorCodes = {
   [2] = "pink",   -- duplicate stop name
 }
 
+-- Should no longer be used but I haven't checked
 ColorLookup = {
   red = "signal-red",
   green = "signal-green",
@@ -63,6 +64,18 @@ ColorLookup = {
   white = "signal-white",
   grey = "signal-grey",
   black = "signal-black"
+}
+
+ColorLookupRGB = {
+  red = 16711680,       -- RGB: (255, 0, 0)
+  green = 65280,        -- RGB: (0, 255, 0)
+  blue = 255,           -- RGB: (0, 0, 255)
+  yellow = 16776960,    -- RGB: (255, 255, 0)
+  pink = 16761035,      -- RGB: (255, 192, 203)
+  cyan = 65535,         -- RGB: (0, 255, 255)
+  white = 16777215,     -- RGB: (255, 255, 255)
+  grey = 8421504,       -- RGB: (128, 128, 128)
+  black = 0             -- RGB: (0, 0, 0)
 }
 
 -- cache often used strings and functions
