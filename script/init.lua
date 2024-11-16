@@ -75,11 +75,12 @@ local function initialize(oldVersion, newVersion)
     local locoID_to_trainID = {} -- id dictionary
     local new_availableTrains = {}
     local new_Deliveries = {}
-    for _, surface in pairs(game.surfaces) do
-      local locomotives = surface.find_entities_filtered({type = "locomotive"})
-      for _, loco in pairs(locomotives) do
-        local train = loco.train
-        if train then
+    for _,surface in pairs(game.surfaces) do
+      local trains = surface.get_trains()
+      for _, train in pairs(trains) do
+        -- build dictionary
+        local loco = Get_Main_Locomotive(train)
+        if loco then
           locoID_to_trainID[loco.unit_number] = train.id
         end
       end
