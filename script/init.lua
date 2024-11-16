@@ -75,12 +75,11 @@ local function initialize(oldVersion, newVersion)
     local locoID_to_trainID = {} -- id dictionary
     local new_availableTrains = {}
     local new_Deliveries = {}
-    for _,surface in pairs(game.surfaces) do
-      local trains = surface.get_trains()
-      for _, train in pairs(trains) do
-        -- build dictionary
-        local loco = Get_Main_Locomotive(train)
-        if loco then
+    for _, surface in pairs(game.surfaces) do
+      local locomotives = surface.find_entities_filtered({type = "locomotive"})
+      for _, loco in pairs(locomotives) do
+        local train = loco.train
+        if train then
           locoID_to_trainID[loco.unit_number] = train.id
         end
       end
@@ -272,6 +271,7 @@ local function registerEvents()
   if storage.LogisticTrainStops and next(storage.LogisticTrainStops) then
     -- script.on_event(defines.events.on_tick, OnTick)
     script.on_nth_tick(nil)
+    dispatcher_nth_tick = dispatcher_nth_tick or 300
     script.on_nth_tick(dispatcher_nth_tick, OnTick)
     script.on_event(defines.events.on_train_changed_state, OnTrainStateChanged)
     script.on_event(defines.events.on_train_created, OnTrainCreated)
@@ -301,7 +301,6 @@ end)
 
 script.on_init(function()
   -- format version string to "00.00.00"
-  local oldVersion, newVersion = nil
   local newVersionString = script.active_mods[MOD_NAME]
   if newVersionString then
     newVersion = format("%02d.%02d.%02d", match(newVersionString, "(%d+).(%d+).(%d+)"))
@@ -317,7 +316,6 @@ end)
 script.on_configuration_changed(function(data)
   if data and data.mod_changes[MOD_NAME] then
     -- format version string to "00.00.00"
-    local oldVersion, newVersion = nil
     local oldVersionString = data.mod_changes[MOD_NAME].old_version
     if oldVersionString then
       oldVersion = format("%02d.%02d.%02d", match(oldVersionString, "(%d+).(%d+).(%d+)"))

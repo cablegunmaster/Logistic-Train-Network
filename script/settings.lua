@@ -20,7 +20,7 @@ finish_loading = settings.global["ltn-dispatcher-finish-loading"].value
 requester_delivery_reset = settings.global["ltn-dispatcher-requester-delivery-reset"].value
 dispatcher_enabled = settings.global["ltn-dispatcher-enabled"].value
 dispatcher_updates_per_tick = settings.global["ltn-dispatcher-updates-per-tick"].value
-dispatcher_nth_tick = settings.global["ltn-dispatcher-nth_tick"].value
+dispatcher_nth_tick = settings.global["ltn-dispatcher-nth_tick"].value or 1
 if dispatcher_nth_tick > 1 then
   dispatcher_updates_per_tick = 1
 end
@@ -88,6 +88,11 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, function(event)
     end
     script.on_nth_tick(nil)
     if next(global.LogisticTrainStops) then
+
+      --safeguard.
+      if type(dispatcher_nth_tick) ~= "number" or dispatcher_nth_tick <= 1 then
+        dispatcher_nth_tick = 300;
+      end
       script.on_nth_tick(dispatcher_nth_tick, OnTick)
     end
   end
